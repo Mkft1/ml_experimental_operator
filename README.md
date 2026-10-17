@@ -1,6 +1,6 @@
 # ML Experiment Operator
 
-Настоящий Kubernetes Operator на Go для запуска экспериментов по подбору
+Kubernetes Operator на Go для запуска экспериментов по подбору
 гиперпараметров машинного обучения (grid / random search) поверх Job'ов.
 
 Управляет двумя CRD:
