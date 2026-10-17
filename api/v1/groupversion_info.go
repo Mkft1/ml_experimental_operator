@@ -1,6 +1,6 @@
-// Package v1 содержит API-типы для группы ml.myorg.dev (версия v1).
+// Package v1 содержит API-типы для группы ml.example.com (версия v1).
 // +kubebuilder:object:generate=true
-// +groupName=ml.myorg.dev
+// +groupName=ml.example.com
 package v1
 
 import (
@@ -10,7 +10,7 @@ import (
 
 var (
 	// GroupVersion — группа и версия API этого пакета.
-	GroupVersion = schema.GroupVersion{Group: "ml.myorg.dev", Version: "v1"}
+	GroupVersion = schema.GroupVersion{Group: "ml.example.com", Version: "v1"}
 
 	// SchemeBuilder используется для регистрации типов в схеме.
 	SchemeBuilder = &scheme.Builder{GroupVersion: GroupVersion}

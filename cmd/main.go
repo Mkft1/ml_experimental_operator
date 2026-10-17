@@ -66,7 +66,7 @@ func main() {
 		Port:                   9443, // webhook server port (webhooks are added later)
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       "ml-experiment-operator.myorg.dev",
+		LeaderElectionID:       "ml-experiment-operator.example.com",
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")

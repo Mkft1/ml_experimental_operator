@@ -24,7 +24,7 @@ import (
 
 const (
 	// trialFinalizer — защищает Trial от удаления до очистки принадлежащего ему Job.
-	trialFinalizer = "trial.ml.myorg.dev/job-cleanup"
+	trialFinalizer = "trial.ml.example.com/job-cleanup"
 
 	// requeueAfterTrialJob — периодическая проверка статуса созданного Job.
 	requeueAfterTrialJob = 30 * time.Second
@@ -37,9 +37,9 @@ type TrialReconciler struct {
 	Recorder record.EventRecorder
 }
 
-// +kubebuilder:rbac:groups=ml.myorg.dev,resources=trials,verbs=get;list;watch;update;patch
-// +kubebuilder:rbac:groups=ml.myorg.dev,resources=trials/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=ml.myorg.dev,resources=trials/finalizers,verbs=update
+// +kubebuilder:rbac:groups=ml.example.com,resources=trials,verbs=get;list;watch;update;patch
+// +kubebuilder:rbac:groups=ml.example.com,resources=trials/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=ml.example.com,resources=trials/finalizers,verbs=update
 // +kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile исполняет цикл согласования Trial (см. требования Шага 4).
@@ -185,7 +185,7 @@ func (r *TrialReconciler) createJobForTrial(ctx context.Context, logger logr.Log
 			Name:        trial.Name,
 			Namespace:   trial.Namespace,
 			Labels:      trialLabels(trial),
-			Annotations: map[string]string{"ml.myorg.dev/attempt": fmt.Sprint(maxInt32(trial.Spec.Attempt, 1))},
+			Annotations: map[string]string{"ml.example.com/attempt": fmt.Sprint(maxInt32(trial.Spec.Attempt, 1))},
 		},
 		Spec: batchv1.JobSpec{
 			BackoffLimit:            &backoffLimit,
@@ -363,8 +363,8 @@ func completionTimeOf(trial *mlv1.Trial) time.Time {
 func trialLabels(trial *mlv1.Trial) map[string]string {
 	return map[string]string{
 		"app.kubernetes.io/managed-by": "ml-experiment-operator",
-		"ml.myorg.dev/experiment":      trial.Spec.ExperimentRef,
-		"ml.myorg.dev/trial":           trial.Name,
+		"ml.example.com/experiment":      trial.Spec.ExperimentRef,
+		"ml.example.com/trial":           trial.Name,
 	}
 }
 
