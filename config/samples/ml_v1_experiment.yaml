@@ -1,0 +1,32 @@
+apiVersion: ml.example.com/v1
+kind: Experiment
+metadata:
+  name: resnet-grid-search
+  namespace: ml-system
+spec:
+  image: registry.example.com/ml/resnet-training:1.0.0
+  command: ["python", "train.py"]
+  dataset:
+    claimName: imagenet-pvc
+    mountPath: /data/imagenet
+  search:
+    strategy: grid
+    parameters:
+      lr: ["0.001", "0.01"]
+      batch_size: ["32", "64"]
+    maxTrials: 4
+    maxParallel: 2
+  resources:
+    gpu: 1
+    cpu: "4"
+    memory: 16Gi
+  output:
+    pvc:
+      claimName: experiment-outputs-pvc
+    path: /outputs/resnet-grid-search
+  maxRetries: 2
+  earlyStopping:
+    metric: val_loss
+    patience: 5
+    minDelta: 0.001
+  priority: 50
