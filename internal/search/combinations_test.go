@@ -16,10 +16,10 @@ func specWith(params map[string][]string, maxTrials int32) *mlv1.ExperimentSpec 
 func TestCombinationsDeterministic(t *testing.T) {
 	spec := specWith(map[string][]string{"lr": {"0.01", "0.1"}, "dropout": {"0.2", "0.5"}}, 4)
 	want := []map[string]string{
-		{"lr": "0.01", "dropout": "0.2"},
-		{"lr": "0.01", "dropout": "0.5"},
-		{"lr": "0.1", "dropout": "0.2"},
-		{"lr": "0.1", "dropout": "0.5"},
+		{"dropout": "0.2", "lr": "0.01"},
+		{"dropout": "0.2", "lr": "0.1"},
+		{"dropout": "0.5", "lr": "0.01"},
+		{"dropout": "0.5", "lr": "0.1"},
 	}
 	got := Combinations(spec)
 	if !reflect.DeepEqual(got, want) {
