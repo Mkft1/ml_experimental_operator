@@ -35,6 +35,10 @@ type TrialSpec struct {
 	// +kubebuilder:validation:Required
 	Image string `json:"image"`
 
+	// Resources — ресурсы на этот trial (GPU/CPU/Memory, наследуются из Experiment).
+	// +optional
+	Resources *ResourceRequirements `json:"resources,omitempty"`
+
 	// Attempt — номер попытки запуска (растёт при ретраях, стартует с 1).
 	// +kubebuilder:validation:Minimum=1
 	// +optional

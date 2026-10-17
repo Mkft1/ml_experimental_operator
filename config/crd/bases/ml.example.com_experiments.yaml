@@ -4,9 +4,9 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.14.0
-  name: experiments.ml.myorg.dev
+  name: experiments.ml.example.com
 spec:
-  group: ml.myorg.dev
+  group: ml.example.com
   names:
     kind: Experiment
     listKind: ExperimentList
