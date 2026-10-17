@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/go-logr/logr v1.2.4
+	github.com/onsi/gomega v1.24.1
 	github.com/prometheus/client_golang v1.14.0
 	k8s.io/api v0.26.3
 	k8s.io/apimachinery v0.26.3
