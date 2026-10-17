@@ -1,0 +1,5 @@
+node_modules/
+.git/
+*.ts
+*.tsx
+package*.json
