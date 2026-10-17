@@ -13,6 +13,13 @@ type Strategy interface {
 	// Next отдаёт следующую неизрасходованную комбинацию гиперпараметров.
 	// ok == false означает, что пространство поиска исчерпано.
 	Next() (hyperparameters map[string]string, ok bool)
+	// Peek возвращает i-ю комбинацию без расходования итератора.
+	// ok == false, если индекс выходит за пределы пространства поиска.
+	// Требуется контроллеру Experiment для детерминированного сопоставления
+	// уже созданных Trial CR'ов с их слотами в пространстве поиска.
+	Peek(i int) (hyperparameters map[string]string, ok bool)
+	// Total — размер пространства поиска (с учётом лимита maxTrials).
+	Total() int
 }
 
 // Factory — функция-конструктор стратегии для данного ExperimentSpec.

@@ -24,10 +24,34 @@ var (
 			Buckets: prometheus.ExponentialBuckets(60, 4, 8), // ~1 мин .. ~2 сут
 		},
 	)
+
+	// experimentTrialCreatedTotal — сколько Trial CR'ов создал контроллер Experiment
+	// (по стратегии поиска и итоговому исходу эксперимента).
+	experimentTrialCreatedTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "experiment_trial_created_total",
+			Help: "Total number of Trial CRs created by the Experiment controller.",
+		},
+		[]string{"strategy"},
+	)
+
+	// experimentPhaseTransitionsTotal — переходы фаз экспериментов.
+	experimentPhaseTransitionsTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "experiment_phase_transitions_total",
+			Help: "Total number of Experiment phase transitions.",
+		},
+		[]string{"phase"},
+	)
 )
 
 func init() {
 	// Регистрируем метрики в общий registry controller-runtime
 	// (отдаётся на /metrics менеджера оператора).
-	metrics.Registry.MustRegister(trialReconcileTotal, trialDurationSeconds)
+	metrics.Registry.MustRegister(
+		trialReconcileTotal,
+		trialDurationSeconds,
+		experimentTrialCreatedTotal,
+		experimentPhaseTransitionsTotal,
+	)
 }
