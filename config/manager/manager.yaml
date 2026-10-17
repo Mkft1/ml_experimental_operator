@@ -1,0 +1,88 @@
+# Деплой оператора ml-experiment-operator.
+# 2 реплики + --leader-elect: активна всегда одна, вторая в standby (HA).
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ml-experiment-system
+  labels:
+    app.kubernetes.io/name: ml-experiment-operator
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ml-experiment-operator
+  namespace: ml-experiment-system
+  labels:
+    app.kubernetes.io/name: ml-experiment-operator
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ml-experiment-operator-controller-manager
+  namespace: ml-experiment-system
+  labels:
+    app.kubernetes.io/name: ml-experiment-operator
+    app.kubernetes.io/component: controller-manager
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ml-experiment-operator
+      app.kubernetes.io/component: controller-manager
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ml-experiment-operator
+        app.kubernetes.io/component: controller-manager
+    spec:
+      serviceAccountName: ml-experiment-operator
+      terminationGracePeriodSeconds: 10
+      # Контейнер работает от непривилегированного пользователя и только на чтение ФС.
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+      containers:
+        - name: manager
+          image: ghcr.io/myorg/ml-experiment-operator:latest
+          command:
+            - /manager
+          args:
+            - --metrics-bind-address=:8080
+            - --health-probe-bind-address=:8081
+            - --leader-elect
+          ports:
+            - name: metrics
+              containerPort: 8080
+              protocol: TCP
+            - name: healthz
+              containerPort: 8081
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
