@@ -1,0 +1,132 @@
+# RBAC-права оператора ml-experiment-operator (least privilege).
+# ClusterRole покрывает ровно те ресурсы, с которыми работают
+# ExperimentReconciler и TrialReconciler.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ml-experiment-operator
+  labels:
+    app.kubernetes.io/name: ml-experiment-operator
+    app.kubernetes.io/component: rbac
+rules:
+  # --- CRD: Experiment ---
+  - apiGroups:
+      - ml.example.com
+    resources:
+      - experiments
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - ml.example.com
+    resources:
+      - experiments/status
+    verbs:
+      - get
+      - update
+      - patch
+  - apiGroups:
+      - ml.example.com
+    resources:
+      - experiments/finalizers
+    verbs:
+      - update
+
+  # --- CRD: Trial ---
+  - apiGroups:
+      - ml.example.com
+    resources:
+      - trials
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - ml.example.com
+    resources:
+      - trials/status
+    verbs:
+      - get
+      - update
+      - patch
+  - apiGroups:
+      - ml.example.com
+    resources:
+      - trials/finalizers
+    verbs:
+      - update
+
+  # --- Dочерние Job'ы для Trial ---
+  - apiGroups:
+      - batch
+    resources:
+      - jobs
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+
+  # --- Pods: наблюдение за статусом и удаление зависших (cleanup) ---
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
+      - delete
+
+  # --- PVC: создание/удаление рабочих PVC экспериментов (cleanup) ---
+  - apiGroups:
+      - ""
+    resources:
+      - persistentvolumeclaims
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+
+  # --- События (event recording) ---
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+
+---
+# Привязка ClusterRole к ServiceAccount оператора.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ml-experiment-operator
+  labels:
+    app.kubernetes.io/name: ml-experiment-operator
+    app.kubernetes.io/component: rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ml-experiment-operator
+subjects:
+  - kind: ServiceAccount
+    name: ml-experiment-operator
+    namespace: ml-experiment-system
