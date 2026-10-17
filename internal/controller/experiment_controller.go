@@ -33,17 +33,17 @@ import (
 const (
 	// experimentFinalizer гарантирует, что мы успеем очистить дочерние
 	// ресурсы (Trial CR'ы и их PVC) до фактического удаления Experiment.
-	experimentFinalizer = "experiment.ml.myorg.dev/cleanup"
+	experimentFinalizer = "experiment.ml.example.com/cleanup"
 
 	// labelExperiment — метка, по которой находим все дочерние Trial данного эксперимента.
-	labelExperiment = "ml.myorg.dev/experiment"
+	labelExperiment = "ml.example.com/experiment"
 
 	// annotationOutputPVC — имя output-PVC, созданного оператором для эксперимента
 	// (кластерный create пока не выполняется — аннотация резервируется под cleanup).
-	annotationOutputPVC = "ml.myorg.dev/output-pvc"
+	annotationOutputPVC = "ml.example.com/output-pvc"
 
 	// labelTrialIndex — индекс комбинации гиперпараметров в пространстве поиска.
-	labelTrialIndex = "ml.myorg.dev/trial-index"
+	labelTrialIndex = "ml.example.com/trial-index"
 
 	// defaultRequeueAfter — периодический пересчёт статуса, если watcher по Trial
 	// почему-то не сработал (страховка от потерянных событий).
@@ -61,10 +61,10 @@ type ExperimentReconciler struct {
 	SearchRegistry *search.Registry
 }
 
-// +kubebuilder:rbac:groups=ml.myorg.dev,resources=experiments,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=ml.myorg.dev,resources=experiments/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=ml.myorg.dev,resources=experiments/finalizers,verbs=update
-// +kubebuilder:rbac:groups=ml.myorg.dev,resources=trials,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=ml.example.com,resources=experiments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=ml.example.com,resources=experiments/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=ml.example.com,resources=experiments/finalizers,verbs=update
+// +kubebuilder:rbac:groups=ml.example.com,resources=trials,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=persistentvolumeclaims,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=events,verbs=create;patch
 
@@ -439,7 +439,7 @@ func earlyStoppingMetric(es *mlv1.EarlyStoppingConfig) string {
 	return strings.ToLower(es.Metric)
 }
 
-// parseTrialIndex разбирает значение метки ml.myorg.dev/trial-index.
+// parseTrialIndex разбирает значение метки ml.example.com/trial-index.
 func parseTrialIndex(s string) (int32, error) {
 	n, err := strconv.Atoi(s)
 	if err != nil {
@@ -545,7 +545,7 @@ func (r *ExperimentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 // mapTrialToExperiment — для Trial без ownerReference (например созданных
-// вручную) находим родительский Experiment по метке ml.myorg.dev/experiment.
+// вручную) находим родительский Experiment по метке ml.example.com/experiment.
 func (r *ExperimentReconciler) mapTrialToExperiment(o client.Object) []reconcile.Request {
 	labels := o.GetLabels()
 	name, ok := labels[labelExperiment]
