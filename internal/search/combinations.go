@@ -34,46 +34,56 @@ func Combinations(spec *mlv1.ExperimentSpec) []map[string]string {
 	sort.Strings(keys)
 
 	// Полное число комбинаций (произведение размеров списков кандидатов),
-	// с защитой от переполнения int32.
+	// с защитой от переполнения.
 	total := 1
 	for _, k := range keys {
 		n := len(params[k])
 		if n == 0 {
 			return nil // параметр без кандидатов — пространство пусто
 		}
-		if total > int(spec.Search.MaxTrials)/n {
-			total = int(spec.Search.MaxTrials) + 1 // достаточно знать, что "много"
-			break
-		}
 		total *= n
 	}
 
-	limit := int(spec.Search.MaxTrials)
+	limit := int(spec.Search.MaxTrials) // 0 => лимит не применяется
 	if limit <= 0 || total < limit {
 		limit = total
 	}
 
+	// Итеративный перебор в лексикографическом порядке: keys[0] — самый
+	// старший разряд (меняется медленнее), keys[len-1] — самый младший.
+	// Порядок детерминирован и одинаков при любом пересчёте, поэтому
+	// i-я комбинация всегда соответствует trial "<experiment>-<i>".
 	out := make([]map[string]string, 0, limit)
-	cur := make(map[string]string, len(keys))
-	var rec func(depth int)
-	rec = func(depth int) {
-		if depth == len(keys) {
-			cp := make(map[string]string, len(cur))
-			for k, v := range cur {
-				cp[k] = v
-			}
-			out = append(out, cp)
-			return
+	coords := make([]int, len(keys)) // индекс выбранного значения каждого параметра
+	for {
+		cp := make(map[string]string, len(keys))
+		for d, key := range keys {
+			cp[key] = params[key][coords[d]]
 		}
-		key := keys[depth]
-		for _, val := range params[key] {
-			if len(out) >= limit {
-				return // лимит maxTrials исчерпан
+		out = append(out, cp)
+		if len(out) >= limit {
+			return out // лимит maxTrials исчерпан
+		}
+		// Инкремент "многомерного счётчика" с переносом в старший разряд.
+		carry := true
+		for d := len(keys) - 1; d >= 0 && carry; d-- {
+			coords[d]++
+			if coords[d] < len(params[keys[d]]) {
+				carry = false
+			} else {
+				coords[d] = 0
 			}
-			cur[key] = val
-			rec(depth + 1)
+		}
+		if carry {
+			return out // пространство исчерпано
 		}
 	}
-	rec(0)
-	return out
+}
+
+// allCombinationsUnlimited — то же декартово произведение, что Combinations,
+// но без ограничения maxTrials (нужно RandomSearch для равномерной выборки).
+func allCombinationsUnlimited(spec *mlv1.ExperimentSpec) []map[string]string {
+	s := *spec
+	s.Search.MaxTrials = 0 // 0 => лимит не применяется (см. Combinations)
+	return Combinations(&s)
 }
