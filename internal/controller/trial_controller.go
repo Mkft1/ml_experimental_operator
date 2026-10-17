@@ -363,8 +363,8 @@ func completionTimeOf(trial *mlv1.Trial) time.Time {
 func trialLabels(trial *mlv1.Trial) map[string]string {
 	return map[string]string{
 		"app.kubernetes.io/managed-by": "ml-experiment-operator",
-		"ml.example.com/experiment":      trial.Spec.ExperimentRef,
-		"ml.example.com/trial":           trial.Name,
+		"ml.example.com/experiment":    trial.Spec.ExperimentRef,
+		"ml.example.com/trial":         trial.Name,
 	}
 }
 
